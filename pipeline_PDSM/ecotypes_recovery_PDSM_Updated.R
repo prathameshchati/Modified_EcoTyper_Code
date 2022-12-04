@@ -1,0 +1,213 @@
+suppressPackageStartupMessages({
+library(cluster)
+library(ggplot2)
+library(viridis)
+source("lib/misc.R")
+source("lib/heatmaps.R")
+source("lib/read_clinical.R")
+})
+
+args = commandArgs(T) 
+# dataset = args[1]
+# fractions = args[2]
+# test_dataset = args[3]
+# top_cols = args[4:length(args)]
+
+#### NEW ARGUMENTS ADDED
+
+keyDir = args[1]
+inputDir = args[2]
+outputDir = args[3]
+top_cols = args[4]
+
+if(is.na(top_cols[1]))
+{
+	top_cols = "Ecotype"
+}
+top_cols = unique(c(top_cols, "Ecotype"))
+
+cat(paste0("Running ecotype recovery...\n"))
+
+# key_dir = file.path("../EcoTyper", dataset, fractions, "Analysis", "rank_selection")
+key_dir = file.path("/duo4/users/pchati/ecotyper/Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", keyDir)
+
+# states_dir = file.path("../EcoTyper", dataset, fractions, "Cell_States", "recovery", test_dataset)
+# states_dir = file.path("/duo4/users/pchati/ecotyper/Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", "Test_8_Peng_Discovered_States_EcoTyper_PDSM_Run_083022", "TCGA_Recovery_090122")
+states_dir = file.path("/duo4/users/pchati/ecotyper/Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", outputDir)
+
+# inpput_dir = file.path("../EcoTyper", dataset, fractions, "Ecotypes", "discovery")
+input_dir = file.path("/duo4/users/pchati/ecotyper/Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", keyDir, "Ecotypes")
+
+# output_dir = file.path("../EcoTyper", dataset, fractions, "Ecotypes", "recovery", test_dataset)
+output_dir = file.path("/duo4/users/pchati/ecotyper/Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", outputDir, "Ecotypes") 
+
+dir.create(output_dir, recursive = T, showWarning = F) 
+
+key = read.delim(file.path(key_dir, "rank_data.txt"))
+
+# ecotypes = read.delim(file.path(inpput_dir, 'ecotypes.txt'), sep = '\t')
+ecotypes = read.delim(file.path(input_dir, 'ecotypes.txt'), sep = '\t')
+
+ecotypes$Ecotype = ecotype_to_factor(ecotypes$Ecotype)
+ecotypes = ecotypes[order(ecotypes$Ecotype),]
+
+all_H = NULL
+all_classes_filt = NULL
+for(cell_type in key[,1])
+{	
+	#print(cell_type) 
+	n_clusters = key[key[,1] == cell_type,2]
+    
+# 	classes = read.delim(file.path(states_dir, cell_type, n_clusters, 'state_abundances.txt'))
+    classes = read.delim(file.path(states_dir, cell_type, 'state_abundances.txt'))
+
+	rownames(classes) = paste0(cell_type, "_", rownames(classes))
+	all_H = rbind(all_H, classes)
+
+# 	classes = read.delim(file.path(states_dir, cell_type, n_clusters, 'state_assignment.txt'))
+    classes = read.delim(file.path(states_dir, cell_type, 'state_assignment.txt'))
+    
+	clusters = ecotypes[ecotypes$CellType == cell_type,] 
+	classes = classes[classes$State %in% clusters$State,]
+	classes = classes[,c("ID", "State")]
+	colnames(classes) = c('ID', cell_type)
+
+	if(is.null(all_classes_filt))
+	{
+		all_classes_filt = classes
+	}else{
+		all_classes_filt = merge(all_classes_filt, classes, by = 'ID', all = T)
+	}	
+} 
+
+all_H = all_H[match(ecotypes$ID, rownames(all_H)),]
+write.table(all_H, file.path(output_dir, "combined_state_abundances.txt"), sep = "\t")
+
+H = do.call(rbind, lapply(levels(ecotypes$Ecotype), function(clst){
+	clst <<- clst
+	#print(clst)
+	inc <<- ecotypes[ecotypes$Ecotype == clst,]$ID
+	apply(all_H[rownames(all_H) %in% inc,,drop = F], 2, mean)
+}))
+rownames(H) = levels(ecotypes$Ecotype)
+#write.table(H, file.path(output_dir, "ecotype_abundance.txt"), sep = "\t")
+H = apply(H, 2, function(x) x / sum(x))
+write.table(H, file.path(output_dir, "ecotype_abundance.txt"), sep = "\t")
+
+p_vals = do.call(rbind, lapply(levels(ecotypes$Ecotype), function(clst){
+	clst <<- clst
+	#print(clst)
+	inc <<- ecotypes[ecotypes$Ecotype == clst,]$ID
+	
+	apply(all_H, 2, function(x){
+		x <<- x
+		err <<- F
+		p <<- 1
+		tryCatch({
+			p <<- t.test(x[rownames(all_H) %in% inc], x[!(rownames(all_H) %in% inc)])$p.value
+		}, error = function(x) err <<- T)
+		p
+	})
+	
+})) 
+rownames(p_vals) = levels(ecotypes$Ecotype)
+write.table(p_vals, file.path(output_dir, "assignment_p_vals.txt"), sep = "\t")
+
+assignment = as.data.frame(apply(H, 2, function(x) rownames(H)[which.max(x)]))
+
+clinical = data.frame(ID = rownames(assignment), MaxEcotype = assignment[,1])
+clinical$AssignmentP = sapply(1:ncol(H), function(i) {
+	p_vals[which.max(H[,i]), i] 
+	})
+clinical$AssignmentQ = p.adjust(clinical$AssignmentP, method = "BH")
+
+clinical$AssignedToEcotypeStates = clinical$ID %in% all_classes_filt$ID
+clinical$Ecotype = ifelse((clinical$AssignmentQ < 0.25) & clinical$AssignedToEcotypeStates, as.character(clinical$MaxEcotype), "Unassigned")
+clinical$Ecotype = factor(as.character(clinical$Ecotype), levels = c(levels(ecotypes$Ecotype), "Unassigned"))
+
+# tmp = read_clinical(clinical$ID, dataset = test_dataset, dataset_type = "bulk")
+tmp = read_clinical_bulk(clinical$ID, bulkInputDir = inputDir, dataset_type = "bulk")                                 
+
+to_rem = colnames(tmp)[colnames(tmp) %in% colnames(clinical)]
+to_rem = to_rem[to_rem != "ID"]
+tmp = tmp[,!colnames(tmp) %in% to_rem, drop = F]
+clinical = merge(clinical, tmp, by = "ID", all.x = T)
+
+clinical = clinical[order(clinical$Ecotype),]
+
+H = H[,match(clinical$ID, colnames(H))]
+all_H = all_H[,match(clinical$ID, colnames(all_H))]
+all_H = all_H[match(ecotypes$ID, rownames(all_H)),]
+
+write.table(clinical, file.path(output_dir, "initial_ecotype_assignment.txt"), sep = "\t")
+
+rownames(clinical) = clinical$ID
+rownames(ecotypes) = ecotypes$ID
+
+clinical_filt = clinical[clinical$Ecotype != "Unassigned",]
+clinical_filt$Ecotype = factor(as.character(clinical_filt$Ecotype), levels = levels(ecotypes$Ecotype))
+write.table(clinical_filt, file.path(output_dir, "ecotype_assignment.txt"), sep = "\t")
+
+h <- heatmap_simple(all_H, top_annotation = clinical_filt, top_columns = top_cols, 
+	left_annotation = ecotypes, left_columns = c("Ecotype", "CellType", "State"),
+	column_split = ifelse(clinical$Ecotype == "Unassigned", "Unassigned", "Assigned"),
+	width = unit(7, "in"), height = unit(4, "in"),
+	legend_name = "State abundance",
+	color_range = seq(0, quantile(as.matrix(all_H), .9), length.out = 8), color_palette = c("white", viridis(8)), raster_quality = 5)
+
+pdf(file.path(output_dir, "heatmap_all_samples.pdf"), width = 12, height = 7)
+draw(h, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legends = T)	
+tmp = dev.off()
+
+small_H = as.matrix(all_H[,match(clinical_filt$ID, colnames(all_H))])
+
+if(is.null(small_H) || nrow(small_H) == 0 || ncol(small_H) == 0)
+{
+	stop(paste("No samples were assigned to ecotypes!"))
+}
+
+h = heatmap_simple(small_H, top_annotation = clinical_filt, top_columns = top_cols, 
+	left_annotation = ecotypes, left_columns = c("Ecotype", "CellType", "State"),
+	width = unit(5, "in"), height = unit(3, "in"),
+	legend_name = "State abundance",
+	color_range = seq(0, quantile(as.matrix(all_H), .9), length.out = 8), color_palette = c("white", viridis(8)), raster_quality = 20)
+
+pdf(file.path(output_dir, "heatmap_assigned_samples_viridis.pdf"), width = 8, height = 7)
+draw(h, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legends = T)	
+#draw(h1, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legends = T)	
+suppressWarnings({
+rect = rectangle_annotation_coordinates(ecotypes$Ecotype, clinical_filt$Ecotype)
+})
+decorate_heatmap_body("hmap", {
+    grid.rect(x = unit(rect$x, "native"), y = unit(rect$y, "native"), width = unit(rect$w, "native"), height = unit(rect$h, "native"), hjust = 0, vjust = 1, gp = gpar(col = "white", fill = NA, lty = 1, lwd = 3))
+})
+tmp = dev.off()
+
+png(file.path(output_dir, "heatmap_assigned_samples_viridis.png"), width = 8, height = 7, units = "in", res = 300)
+draw(h, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legends = T)	
+decorate_heatmap_body("hmap", {
+    grid.rect(x = unit(rect$x, "native"), y = unit(rect$y, "native"), width = unit(rect$w, "native"), height = unit(rect$h, "native"), hjust = 0, vjust = 1, gp = gpar(col = "white", fill = NA, lty = 1, lwd = 3))
+})
+tmp = dev.off()
+
+h = heatmap_simple(small_H, top_annotation = clinical, top_columns = top_cols, 
+	left_annotation = ecotypes, left_columns = c("Ecotype", "CellType", "State"),
+	width = unit(5, "in"), height = unit(3, "in"), 
+	legend_name = "State abundance",
+	color_range = c(seq(0, quantile(small_H, .8), length.out = 8)), color_palette = c("black", brewer.pal(8, "YlGnBu")), raster_quality = 20)
+
+pdf(file.path(output_dir, "heatmap_assigned_samples_YlGnBu.pdf"), width = 8, height = 7)
+draw(h, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legends = T)	
+decorate_heatmap_body("hmap", {
+    grid.rect(x = unit(rect$x, "native"), y = unit(rect$y, "native"), width = unit(rect$w, "native"), height = unit(rect$h, "native"), hjust = 0, vjust = 1, gp = gpar(col = "white", fill = NA, lty = 1, lwd = 3))
+})
+tmp = dev.off()
+
+png(file.path(output_dir, "heatmap_assigned_samples_YlGnBu.png"), width = 8, height = 7, units = "in", res = 300)
+draw(h, heatmap_legend_side = "bottom", annotation_legend_side = "bottom", merge_legends = T)	
+decorate_heatmap_body("hmap", {
+    grid.rect(x = unit(rect$x, "native"), y = unit(rect$y, "native"), width = unit(rect$w, "native"), height = unit(rect$h, "native"), hjust = 0, vjust = 1, gp = gpar(col = "white", fill = NA, lty = 1, lwd = 3))
+})
+tmp = dev.off()
+
+
