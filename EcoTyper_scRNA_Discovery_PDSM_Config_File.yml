@@ -1,0 +1,48 @@
+default :
+  Input :    
+    Discovery dataset name : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322_Run"
+    Expression matrix : "Generate_Cell_State_Abundances_Predefined_States_Test_Outputs/Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scCounts_Formatted_DiscStates_Filtered_CPM_102322.txt"    
+    Annotation file : "Generate_Cell_State_Abundances_Predefined_States_Test_Outputs/Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scObs_Formatted_DiscStates_Filtered_102322.txt" 
+    Annotation file column to scale by : NULL
+    Annotation file column(s) to plot : []
+    
+  Output :
+    Output folder : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322_Outputs"
+
+  Pipeline settings :
+    #Pipeline steps:
+    #   step 1 (extract cell type specific genes)
+    #   step 2 (cell state discovery on correrlation matrices)
+    #   step 3 (choosing the number of cell states)
+    #   step 4 (extracting cell state information)
+    #   step 5 (cell state re-discovery in expression matrices)
+    #   step 6 (extracting information for re-discovered cell states)
+    #   step 7 (cell state QC filter)
+    #   step 8 (ecotype discovery)
+    Pipeline steps to skip : [25, 1, 2, 3, 4, 51, 52, 53, 54, 55, 6, 7, 81, 82] # RERUN STEP 6 BEFORE DOING RECOVERY (AND STEP 5 P5)
+#     Pipeline steps to skip : [25, 1, 2, 3, 4, 7] 
+    Filter non cell type specific genes : True
+    Number of threads : 16
+    Number of NMF restarts : 5
+    Maximum number of states per cell type : 15
+    Cophenetic coefficient cutoff : 0.975
+    #The p-value cutoff used for filtering non-significant overlaps in the jaccard matrix used for discovering ecotypes in step 8. Default: 1 (no filtering).
+    Jaccard matrix p-value cutoff : 1
+    Minimum number of states in ecotypes : 3
+
+  PDSM Settings :
+#     Annotation File : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scObs_Formatted_DiscStates_Filtered_102322.txt"
+#     Annotation File : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scObs_Formatted_DiscStates_Filtered_111622_Malignant.txt"
+#     Annotation File : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scObs_Formatted_DiscStates_Filtered_111622_Bcell.txt"
+    Annotation File : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scObs_Formatted_DiscStates_Filtered_111622.txt"
+#     Expression Matrix : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scCounts_Formatted_DiscStates_Filtered_CPM_102322.txt"
+#     Expression Matrix : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scCounts_Formatted_DiscStates_Filtered_CPM_111622_Malignant.txt"
+#     Expression Matrix : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scCounts_Formatted_DiscStates_Filtered_CPM_111622_Bcell.txt"
+    Expression Matrix : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322/Single_Cell_Inputs/scCounts_Formatted_DiscStates_Filtered_CPM_111622.txt"
+    Input Folder : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322"
+    States Output Folder : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322"
+    Ecotypes Output Folder : "Test_18_New_scRNA_Seq_Object_Discovered_States_PDSM_102322"
+    P-Value Cutoff : 0.05
+    Minimum States Per Ecotype: 3
+
+    

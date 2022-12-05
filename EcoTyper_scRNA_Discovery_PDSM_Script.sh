@@ -1,0 +1,1 @@
+Rscript EcoTyper_discovery_scRNA_PDSM_Compiled_Steps.R -c EcoTyper_scRNA_Discovery_PDSM_Config_File.yml
