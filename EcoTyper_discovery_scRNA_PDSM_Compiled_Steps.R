@@ -18,7 +18,7 @@ arguments$add_argument("-c", "--config", type = "character", metavar="<PATH>",
 arguments$add_argument("-h", "--help", action='store_true', help="Print help message.")
 
 args <- parser$parse_args()
-#print(args)
+
 if(args$h || is.null(args$config))
 {
 	parser$print_help()
@@ -45,7 +45,7 @@ cohpenetic_cutoff = config$"Pipeline settings"$"Cophenetic coefficient cutoff"
 skip_steps = config$"Pipeline settings"$"Pipeline steps to skip"
 p_value_cutoff = config$"Pipeline settings"$"Jaccard matrix p-value cutoff"
 
-# CUSTOM INPUTS
+# Custom inputs for EcoTyper PDSM.
 annotation_file_path = config$"PDSM Settings"$"Annotation File"
 expression_matrix_file_path = config$"PDSM Settings"$"Expression Matrix"
 input_folder_file_path = config$"PDSM Settings"$"Input Folder"
@@ -58,7 +58,7 @@ suppressWarnings({
 	final_output = abspath(final_output)	
 })
 
-# Starting EcoTyper
+# Starting EcoTyper.
 setwd("pipeline")
 start = Sys.time()
 
@@ -69,22 +69,19 @@ if(config$"Pipeline settings"$"Filter non cell type specific genes")
 	fractions = "All_genes"
 }
 
-# STEP 1: Extract cell type specific genes. 
+# STEP 1: Extract cell type specific genes.
 
 if(!1 %in% skip_steps & config$"Pipeline settings"$"Filter non cell type specific genes")
 {
 	cat("\nStep 1 (extract cell type specific genes)...\n")
 
-	# annotation = read.delim(file.path(file.path("../datasets/discovery", discovery, "annotation.txt")))	
-#     annotation = read.delim(file.path(file.path("../example_data", "scRNA_CRC_Annotation_Ecotype_States_Filtered.txt")))	
     annotation = read.delim(file.path("../Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", annotation_file_path))
     
 	cell_types = unlist(levels(as.factor(as.character(annotation$CellType))))	
 	for(cell_type in cell_types)
 	{
 		print(cell_type)
-		# PushToJobQueue(paste("Rscript state_discovery_scRNA_filter_genes.R", discovery, fractions, cell_type, scale_column))	
-#         PushToJobQueue(paste("Rscript state_discovery_scRNA_filter_genes_Predefined_States_Mode.R", cell_type))	
+
         PushToJobQueue(paste("Rscript state_discovery_scRNA_filter_genes_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, states_output_folder))	
         
 	}
