@@ -13,3 +13,4 @@ The scRNA-seq ecotype discovery pipeline has three primary associated files:
   1. EcoTyper_discovery_scRNA_PDSM_Compiled_Steps.R: Calls each step required for ecotype discovery; the subfiles are stored in a separate folder and referenced within the set of compiled steps and detailed below. 
   2. EcoTyper_scRNA_Discovery_PDSM_Config_File.yml: The configuration file takes the file paths of the scRNA-seq expression to be decomposed and its respective metadata file.
   3. EcoTyper_scRNA_Discovery_PDSM_Script.sh: Calls (1) using file path inputs from (2). 
+\
