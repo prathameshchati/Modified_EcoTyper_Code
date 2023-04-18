@@ -30,7 +30,7 @@ config_file = abspath(args$config)
 config <- config::get(file = config_file)
 # check_discovery_configuration_scRNA(config)
 
-discovery = config$Input$"dataset name"
+discovery = config$Input$"Discovery dataset name"
 discovery_type = config$Input$"Expression type"
 scale_column = config$Input$"Annotation file column to scale by"
 additional_columns = config$Input$"Annotation file column(s) to plot"
@@ -82,7 +82,7 @@ if(!1 %in% skip_steps & config$"Pipeline settings"$"Filter non cell type specifi
 	{
 		print(cell_type)
 
-        PushToJobQueue(paste("Rscript Pipeline/S1_state_discovery_scRNA_filter_genes_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, states_output_folder))	
+        PushToJobQueue(paste("Rscript state_discovery_scRNA_filter_genes_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, states_output_folder))	
         
 	}
 	RunJobQueue()	
@@ -105,7 +105,7 @@ if(!2 %in% skip_steps)
 
 	for(cell_type in cell_types)
 	{
-        PushToJobQueue(paste("Rscript Pipeline/S2_state_discovery_scRNA_distances_Predefined_States_Mode.R", cell_type, TRUE, annotation_file_path, expression_matrix_file_path, input_folder_file_path, states_output_folder))	
+        PushToJobQueue(paste("Rscript state_discovery_scRNA_distances_Predefined_States_Mode.R", cell_type, TRUE, annotation_file_path, expression_matrix_file_path, input_folder_file_path, states_output_folder))	
         
 	}	
 	RunJobQueue() 
@@ -261,6 +261,26 @@ if(!6 %in% skip_steps)
 }else{
 	cat("Skipping Step 6 (generating initial gene info files)...\n")
 }	
+
+# STEP 7: Cell state QC filter (DELETE THIS STEP)
+
+if(!7 %in% skip_steps)
+{
+	cat("\nStep 7 (cell state QC filter)...\n")
+
+        key = read.delim(file.path("../Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", states_output_folder, "rank_data.txt"))
+    
+	for(cell_type in key[,1])
+	{	
+		cat(paste("Filtering low-quality cell states for:", cell_type, "\n"))
+		n_clusters = key[key[,1] == cell_type, 2]
+		PushToJobQueue(paste("Rscript state_discovery_first_filter_scRNA_Predefined_States_Mode.R", states_output_folder, annotation_file_path, cell_type, "State", paste(additional_columns, collapse = " "))) 		 
+	}	
+	RunJobQueue()
+	cat("Step 7 (cell state QC filter) finished successfully!\n")
+}else{
+	cat("\nSkipping step 7 (cell state QC filter)...\n")
+}
 
 # STEP 8: Ecotype discovery.
 
