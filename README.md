@@ -20,7 +20,78 @@ The scRNA discovery code can be found in __scRNA_Discovery_PDSM__. The scRNA-seq
   
 The subfolder __Pipeline__ contains labeled steps that are called within __(1)__ and beging with __S__ followed by its respective order. The __P__ indicates subparts of a certain step. The steps are not numbered in equal steps since each step corresponds to its true EcoTyper step. Certain steps were excluded based on their necessity within and compatibility with the modified pipeline. Below, each step is described, including its function and respective input and output files.
 
-#### scRNA Discovery Steps
+#### Steps
 
 ##### S1
 
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+##### S2
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+##### S5
+
+###### P1
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+###### P2
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+###### P3
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+###### P4
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+###### P5
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+##### S6
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+##### S8
+
+###### P1
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
+
+###### P2
+
+- File Path: 
+- Function: 
+- Inputs:
+- Outputs
