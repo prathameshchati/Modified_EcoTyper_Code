@@ -22,28 +22,28 @@ The subfolder __Pipeline__ contains labeled steps that are called within __(1)__
 
 #### Steps
 
-##### S1
+##### S1: Isolate cell type-specific genes
 
-- File Path: 
-- Function: 
-- Inputs:
-- Outputs
+- File Path: Pipeline/S1_state_discovery_scRNA_filter_genes_Predefined_States_Mode.R
+- Function: Identifies top differentially expressed genes per cell type. 
+- Inputs: Annotations, expression atrix
+- Outputs: Cell type-specific genes (_cell_type_specific_genes_raw.txt, _cell_type_specific_genes.txt)
 
-##### S2
+##### S2: Scales and filters expression matrix
 
-- File Path: 
-- Function: 
-- Inputs:
-- Outputs
+- File Path: Pipeline/S2_state_discovery_scRNA_distances_Predefined_States_Mode.R
+- Function: Scales, normalizes, and filters gene expression matrix per cell type; generates cell type-specific gene expression matrices. 
+- Inputs: S1 outputs, annotations, expression, matrix
+- Outputs: Cell type-specific expression matrices (expression_full_matrix_log2.txt, expression_full_matrix_scaled.txt, expression_top_genes_scaled_filt.txt)
 
-##### S5
+##### S5: File generation and NMF
 
-###### P1
+###### P1: Generates metadata for NMF
 
-- File Path: 
-- Function: 
-- Inputs:
-- Outputs
+- File Path: Pipeline/S5_P1_EcoTyper_scRNA_Discovery_File_Generation_Predefined_States_Mode.py
+- Function: First generates mappings between initial and final state labels (the difference in the modified pipeline is arbitrary and can also be the same labels). It next generates the initial and state assignment files for ecotype discovery. Finally, the rank data is generated, which indicates the number of cell states per cell type. The rank should be fixed given each cell type is manually subclustered to a finite number of cell states. 
+- Inputs: Annotations (with appropriate cell type and state columns with labels)
+- Outputs: 
 
 ###### P2
 
