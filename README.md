@@ -91,7 +91,7 @@ The subfolder __Pipeline__ contains labeled steps that are called within __(1)__
 
 ###### P2: Assigns ecotypes
 
-- File Path: 
+- File Path: Pipeline/S8_P2_ecotypes_assign_samples_scRNA_PDSM_Updated.R
 - Function: After ecotypes are discovered, each sample is assigned an ecotype based on the ecotype abundance data. Ecotype abundance heatmap and clustermaps are also generated.
 - Inputs: rank_data.txt, ecotypes.txt, mapping_all_states.txt, mapping_to_initial_states.txt, initial_state_assignment.txt
 - Outputs:combined_state_abundances.txt, ecotype_abundance.txt, assignment_p_vals.txt, heatmap_assigned_samples_viridis.pdf, heatmap_assigned_samples_viridis.png, heatmap_assigned_samples_YlGnBu.pdf, heatmap_assigned_samples_YlGnBu.png
