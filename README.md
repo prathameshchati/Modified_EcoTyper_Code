@@ -64,36 +64,36 @@ The subfolder __Pipeline__ contains labeled steps that are called within __(1)__
 - File Path: Pipeline/S5_P4_state_discovery_extract_features_scRNA_Predefined_States_Mode.r
 - Function: Computes cell state-specific differentially expressed genes and isolates the expression matrix for each cell type based on the top signature genes for each cell state. This supports the NMF step by limiting the space of possible signature genes to converge on. 
 - Inputs: S2 outputs, S5 P1 outputs
-- Outputs: 
+- Outputs: full_FCs.txt, top_FCs.txt, expression_top_genes_log2_step_5P1.txt, expression_top_genes_scaled_step_5P1.txt
 
-###### P5
+###### P5: Conduct modified NMF on cell type-specific scRNA-seq matrix
 
-- File Path: 
-- Function: 
-- Inputs:
-- Outputs
+- File Path: Directly within scRNA_Discovery_PDSM/EcoTyper_discovery_scRNA_PDSM_Compiled_Steps.R
+- Function: Uses the binary H matrix and fits an NMF model that enables the recovery of specific W which represents the average gene expression per each labeled cell state for a given cell type. 
+- Inputs: S5 P3 outputs (Binary_H.txt), S5 P4 outputs (expression_top_genes_scaled_step_5P1.txt)
+- Outputs: Average_Cell_State_Gene_Expression_Matrix_W.txt
 
 ##### S6
 
+- File Path: Pipeline/S6_state_discovery_initial_plots_Predefined_States_Mode.R 
+- Function: Generates gene information file which contains cell state-specific genes filtered for specific signature genes. 
+- Inputs: Annotations, S5 P1 outputs (initial_state_assignment.txt), S5 P4 outputs (expression_top_genes_scaled_step_5P1.txt)
+- Outputs: initial_gene_info.txt
+
+##### S8: Ecotype discvoery
+
+###### P1: Identifies ecotypes
+
+- File Path: Pipeline/S8_P1_ecotypes_scRNA_PDSM_Updated.R
+- Function: Cell state abundances per cell type are characterized and binarized across all samples. Cell states with similar abundance profiles are clustered to generate communities of co-occuring (co-associated) cell states, termed ecotypes. 
+- Inputs: rank_data.txt, mapping_to_initial_states.txt, initial_state_assignment.txt, state_assignment.txt
+- Outputs: binary_classification_all_states.txt, jaccard_matrix.txt, silhouette_initial.txt, initial_jaccard_matrix.pdf, ecotypes.txt, silhouette.txt, jaccard_matrix.png
+
+###### P2: Assigns ecotypes
+
 - File Path: 
-- Function: 
-- Inputs:
-- Outputs
-
-##### S8
-
-###### P1
-
-- File Path: 
-- Function: 
-- Inputs:
-- Outputs
-
-###### P2
-
-- File Path: 
-- Function: 
-- Inputs:
-- Outputs:
+- Function: After ecotypes are discovered, each sample is assigned an ecotype based on the ecotype abundance data. Ecotype abundance heatmap and clustermaps are also generated.
+- Inputs: rank_data.txt, ecotypes.txt, mapping_all_states.txt, mapping_to_initial_states.txt, initial_state_assignment.txt
+- Outputs:combined_state_abundances.txt, ecotype_abundance.txt, assignment_p_vals.txt, heatmap_assigned_samples_viridis.pdf, heatmap_assigned_samples_viridis.png, heatmap_assigned_samples_YlGnBu.pdf, heatmap_assigned_samples_YlGnBu.png
 
 
