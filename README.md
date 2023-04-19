@@ -73,7 +73,7 @@ The subfolder __Pipeline__ contains labeled steps that are called within __(1)__
 - Inputs: S5 P3 outputs (Binary_H.txt), S5 P4 outputs (expression_top_genes_scaled_step_5P1.txt)
 - Outputs: Average_Cell_State_Gene_Expression_Matrix_W.txt
 
-##### S6
+##### S6: Create gene information file
 
 - File Path: Pipeline/S6_state_discovery_initial_plots_Predefined_States_Mode.R 
 - Function: Generates gene information file which contains cell state-specific genes filtered for specific signature genes. 
