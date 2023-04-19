@@ -11,8 +11,8 @@ The discovery of de novo cell states potentially inhibits the substitution of la
 The code base is organized based on the specific files used in the modified EcoTyper pipeline; other functional portions of EcoTyper not used specifically in the modified version have been omitted or stored in separate folders. Any file or script used in the modified version contains the suffix, "_Predefined_States_Mode" or "_PDSM".
 
 The pipeline is split into two parts which are described briefly here and more in detail below:
-  1. scRNA Discovery: Identifies ecotypes from labeled scRNA-seq data and generates custom cell state signature matrix for bulk RNA-seq recovery.
-  2. Bulk Recovery: Recovers identified cell states and ecotypes in bulk RNA-seq data. 
+  1. __scRNA Discovery__: Identifies ecotypes from labeled scRNA-seq data and generates custom cell state signature matrix for bulk RNA-seq recovery.
+  2. __Bulk Recovery__: Recovers identified cell states and ecotypes in bulk RNA-seq data. 
   
 ### scRNA Discovery
 
