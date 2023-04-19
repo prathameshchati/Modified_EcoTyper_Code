@@ -1,10 +1,10 @@
 suppressPackageStartupMessages({
 library(config)
 library(argparse)
-source("pipeline/lib/config.R") 
-source("pipeline/lib/misc.R") 
-source("pipeline/lib/multithreading.R")
-source("pipeline/lib/ecotyper_NMF_Generate_W_Function_Modified.R")
+source("Pipeline/lib/config.R") 
+source("Pipeline/lib/misc.R") 
+source("Pipeline/lib/multithreading.R")
+source("Pipeline/lib/ecotyper_NMF_Generate_W_Function_Modified.R")
 })
 
 parser <- ArgumentParser(add_help = F)
@@ -57,7 +57,7 @@ suppressWarnings({
 })
 
 # Starting EcoTyper.
-setwd("pipeline")
+setwd("Pipeline")
 start = Sys.time()
 
 if(config$"Pipeline settings"$"Filter non cell type specific genes")
