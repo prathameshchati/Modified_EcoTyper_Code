@@ -9,6 +9,10 @@ The discovery of de novo cell states potentially inhibits the substitution of la
 ## Directory Structure
 
 The code base is organized based on the specific files used in the modified EcoTyper pipeline; other functional portions of EcoTyper not used specifically in the modified version have been omitted or stored in separate folders. Any file or script used in the modified version contains the suffix, "_Predefined_States_Mode" or "_PDSM".
+
+The pipeline is split into two parts which are described briefly here and more in detail below:
+  1. scRNA Discovery: Identifies ecotypes from labeled scRNA-seq data and generates custom cell state signature matrix for bulk RNA-seq recovery.
+  2. Bulk Recovery: Recovers identified cell states and ecotypes in bulk RNA-seq data. 
   
 ### scRNA Discovery
 
@@ -21,6 +25,8 @@ The scRNA discovery code can be found in __scRNA_Discovery_PDSM__. The scRNA-seq
 The subfolder __Pipeline__ contains labeled steps that are called within __(1)__ and beging with __S__ followed by its respective order. The __P__ indicates subparts of a certain step. The steps are not numbered in equal steps since each step corresponds to its true EcoTyper step. Certain steps were excluded based on their necessity within and compatibility with the modified pipeline. Below, each step is described, including its function and respective input and output files. Note, specific file outputs are specified in the [EcoTyper](https://github.com/digitalcytometry/ecotyper) documentation while file specifically modified here are detailed below. 
 
 #### Steps
+
+__Note:__ 
 
 ##### S1: Isolate cell type-specific genes
 
