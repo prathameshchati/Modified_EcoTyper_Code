@@ -4,8 +4,6 @@ library(argparse)
 source("pipeline/lib/config.R") 
 source("pipeline/lib/misc.R") 
 source("pipeline/lib/multithreading.R")
-# source("pipeline/lib/ecotyper_NMF_Generate_W_Function.R")
-# source("pipeline/lib/ecotyper_NMF_Generate_W_Function_One_State.R")
 source("pipeline/lib/ecotyper_NMF_Generate_W_Function_Modified.R")
 })
 
@@ -82,7 +80,7 @@ if(!1 %in% skip_steps & config$"Pipeline settings"$"Filter non cell type specifi
 	{
 		print(cell_type)
 
-        PushToJobQueue(paste("Rscript state_discovery_scRNA_filter_genes_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, states_output_folder))	
+        PushToJobQueue(paste("Rscript Pipeline/S1_state_discovery_scRNA_filter_genes_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, states_output_folder))	
         
 	}
 	RunJobQueue()	
@@ -105,7 +103,7 @@ if(!2 %in% skip_steps)
 
 	for(cell_type in cell_types)
 	{
-        PushToJobQueue(paste("Rscript state_discovery_scRNA_distances_Predefined_States_Mode.R", cell_type, TRUE, annotation_file_path, expression_matrix_file_path, input_folder_file_path, states_output_folder))	
+        PushToJobQueue(paste("Rscript Pipeline/S2_state_discovery_scRNA_distances_Predefined_States_Mode.R", cell_type, TRUE, annotation_file_path, expression_matrix_file_path, input_folder_file_path, states_output_folder))	
         
 	}	
 	RunJobQueue() 
@@ -135,7 +133,7 @@ if(!51 %in% skip_steps) # NOTE STEP 5 P1 = 51
     
 	cell_types = unlist(levels(as.factor(as.character(annotation$CellType))))	
 
-    PushToJobQueue(paste("python lib/Python_Scripts/EcoTyper_scRNA_Discovery_File_Generation_Predefined_States_Mode.py", annotationPath, sampleColumn, CellTypeColumn, cellStateColumn, outputPath))	
+    PushToJobQueue(paste("python Pipeline/S5_P1_EcoTyper_scRNA_Discovery_File_Generation_Predefined_States_Mode.py", annotationPath, sampleColumn, CellTypeColumn, cellStateColumn, outputPath))	
 
 	RunJobQueue() 
 	    
@@ -155,7 +153,7 @@ if(!52 %in% skip_steps) # NOTE STEP 5 P2 = 52
     
 	cell_types = unlist(levels(as.factor(as.character(annotation$CellType))))	
 
-    PushToJobQueue(paste("python lib/Python_Scripts/EcoTyper_scRNA_Discovery_Generate_State_Abundances_Predefined_States_Python.py", annotationPath, sampleColumn, CellTypeColumn, cellStateColumn, outputPath))	
+    PushToJobQueue(paste("python Pipeline/S5_P2_EcoTyper_scRNA_Discovery_Generate_State_Abundances_Predefined_States_Python.py", annotationPath, sampleColumn, CellTypeColumn, cellStateColumn, outputPath))	
 
 	RunJobQueue() 
 	    
@@ -173,7 +171,7 @@ if(!53 %in% skip_steps) # NOTE STEP 5 P3 = 53
     
 	cell_types = unlist(levels(as.factor(as.character(annotation$CellType))))	
 
-    PushToJobQueue(paste("python lib/Python_Scripts/EcoTyper_scRNA_Discovery_Generate_Binary_H_Predefined_States_Python.py", annotationPath, sampleColumn, CellTypeColumn, cellStateColumn, outputPath))	
+    PushToJobQueue(paste("python Pipeline/S5_P3_EcoTyper_scRNA_Discovery_Generate_Binary_H_Predefined_States_Python.py", annotationPath, sampleColumn, CellTypeColumn, cellStateColumn, outputPath))	
 
 	RunJobQueue() 
 	    
@@ -195,7 +193,7 @@ if(!54 %in% skip_steps) #NOTE, IT IS STEP 5 P4 = 54
 		cat(paste("Extracting marker genes for cell states defined in:", cell_type, "\n"))
 		n_clusters = key[key[,1] == cell_type, 2]
         
-        PushToJobQueue(paste("Rscript state_discovery_extract_features_scRNA_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, input_folder_file_path, states_output_folder, n_clusters))
+        PushToJobQueue(paste("Rscript Pipeline/S5_P4_state_discovery_extract_features_scRNA_Predefined_States_Mode.R", cell_type, annotation_file_path, expression_matrix_file_path, input_folder_file_path, states_output_folder, n_clusters))
 	}	
 	RunJobQueue()
 	
@@ -253,7 +251,7 @@ if(!6 %in% skip_steps)
         
         cat(paste0("\nGenerating initial gene info text files for ", cell_type, "\n"))
                 
-        PushToJobQueue(paste("Rscript state_discovery_initial_plots_Predefined_States_Mode.R", cell_type, states_output_folder, annotation_file_path))	
+        PushToJobQueue(paste("Rscript Pipeline/S6_state_discovery_initial_plots_Predefined_States_Mode.R", cell_type, states_output_folder, annotation_file_path))	
         
 	}	
 	RunJobQueue() 
@@ -261,26 +259,6 @@ if(!6 %in% skip_steps)
 }else{
 	cat("Skipping Step 6 (generating initial gene info files)...\n")
 }	
-
-# STEP 7: Cell state QC filter (DELETE THIS STEP)
-
-if(!7 %in% skip_steps)
-{
-	cat("\nStep 7 (cell state QC filter)...\n")
-
-        key = read.delim(file.path("../Generate_Cell_State_Abundances_Predefined_States_Test_Outputs", states_output_folder, "rank_data.txt"))
-    
-	for(cell_type in key[,1])
-	{	
-		cat(paste("Filtering low-quality cell states for:", cell_type, "\n"))
-		n_clusters = key[key[,1] == cell_type, 2]
-		PushToJobQueue(paste("Rscript state_discovery_first_filter_scRNA_Predefined_States_Mode.R", states_output_folder, annotation_file_path, cell_type, "State", paste(additional_columns, collapse = " "))) 		 
-	}	
-	RunJobQueue()
-	cat("Step 7 (cell state QC filter) finished successfully!\n")
-}else{
-	cat("\nSkipping step 7 (cell state QC filter)...\n")
-}
 
 # STEP 8: Ecotype discovery.
 
@@ -290,7 +268,7 @@ if(!81 %in% skip_steps)
 {
     cat("\nStep 8 P1 (ecotype discovery)...\n")
     
-    PushToJobQueue(paste("Rscript /duo4/users/pchati/EcoTyper_Updated/ecotyper/pipeline_PDSM/ecotypes_scRNA_PDSM_Updated.R", states_output_folder, annotation_file_path, p_val_cutoff, min_states)) 
+    PushToJobQueue(paste("Rscript Pipeline/S8_P1_ecotypes_scRNA_PDSM_Updated.R", states_output_folder, annotation_file_path, p_val_cutoff, min_states)) 
     
 	RunJobQueue()
     
@@ -306,7 +284,7 @@ if(!82 %in% skip_steps)
 {
     cat("Step 8 P2 (ecotype assignment) assigning ecotypes...!\n")
     
-    PushToJobQueue(paste("Rscript /duo4/users/pchati/EcoTyper_Updated/ecotyper/pipeline_PDSM/ecotypes_assign_samples_scRNA_PDSM_Updated.R", states_output_folder, "State", annotation_file_path, paste(additional_columns, collapse = " "))) 
+    PushToJobQueue(paste("Rscript Pipeline/S8_P2_ecotypes_assign_samples_scRNA_PDSM_Updated.R", states_output_folder, "State", annotation_file_path, paste(additional_columns, collapse = " "))) 
 	
 	RunJobQueue()
     cat("Step 8 P2 (ecotype assignment) ecotype assignment finished successfully!\n")
